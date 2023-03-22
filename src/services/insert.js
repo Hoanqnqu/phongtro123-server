@@ -6,9 +6,13 @@ import chothuematbang from "../../data/chothuematbang.json";
 import chothuephongtro from "../../data/chothuephongtro.json";
 import nhachothue from "../../data/nhachothue.json";
 
+import {dataArea, dataPrice}from '../ultis/data'
+import {getNumberFromString}from '../ultis/common'
+
 import generateCode from "../ultis/generateCode";
 import { stringToDate } from "../ultis/generateCode";
-const data = nhachothue;
+
+const data = chothuecanho;
 const dataBody = data.body;
 require("dotenv").config();
 
@@ -19,8 +23,8 @@ export const insertService = () =>
     new Promise(async (resolve, reject) => {
         try {
             await db.Category.create({
-                code: "NCT",
-                value: "Nhà cho thuê",
+                code: "CTCH",
+                value: "Cho thuê căn hộ",
                 header: data?.header?.title,
                 subheader: data?.header?.description,
             });
@@ -31,6 +35,9 @@ export const insertService = () =>
                 let userId = v4();
                 let overviewId = v4();
                 let imagesID = v4();
+                let currentArea = getNumberFromString(item?.header?.attributes?.acreage)
+                let currentPrice = getNumberFromString(item?.header?.attributes?.price)
+
 
                 await db.Post.create({
                     id: postId,
@@ -39,11 +46,14 @@ export const insertService = () =>
                     labelCode,
                     address: item?.header?.adderss,
                     attributesId,
-                    categoryCode: "NCT",
+                    categoryCode: "CTCH",
                     description: JSON.stringify(item?.mainContent?.content),
                     userId,
                     overviewId,
                     imagesID,
+                    priceCode:dataPrice.find(price => price.max > currentPrice && price.min<= currentPrice)?.code,
+                    areaCode: dataArea.find(area => area.max > currentArea && area.min<= currentArea)?.code
+
                 });
                 await db.Attribute.create({
                     id: attributesId,
@@ -59,6 +69,7 @@ export const insertService = () =>
                         value: item?.header?.class?.classType
                     },
                 });
+                
                 await db.User.create({
                     id: userId,
                     name: item?.contact?.content.find(
@@ -110,3 +121,28 @@ export const insertService = () =>
             reject(error);
         }
     });
+
+    
+ export const createPricesAndAreas = ()=> new Promise((resolve, reject)=>{
+    try{
+        dataPrice.forEach(async(item, index)=>{
+            await db.Price.create({
+             
+                order:index+1,
+                code: item.code,
+                value:item.value
+            })
+        })
+        dataArea.forEach(async(item, index)=>{
+            await db.Area.create({
+               
+                order:index+1,
+                code: item.code,
+                value:item.value
+            })
+        })
+        resolve('OK')
+    }catch(err){
+        reject(err)
+    }
+})
