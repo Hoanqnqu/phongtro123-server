@@ -21,12 +21,14 @@ export const getPostService = ()=> new Promise(async(resolve, reject)=>{
         reject(error)
     }
 })
-export const getPostLimitService = (offset)=> new Promise(async(resolve, reject)=>{
+export const getPostLimitService = (offset, query)=> new Promise(async(resolve, reject)=>{
     try {
+        let offset_ = (!offset|| +offset<=1)?0:(+offset-1)
         const response = await db.Post.findAndCountAll({
+            where:query,
             raw: true,
             nest:true,
-            offset:offset * +process.env.LIMIT||0,
+            offset:offset_ * +process.env.LIMIT,
             limit:+process.env.LIMIT,
             include:[
                 {model:db.Image, as:'images', attributes:['id','image']},

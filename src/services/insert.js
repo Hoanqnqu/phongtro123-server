@@ -7,12 +7,12 @@ import chothuephongtro from "../../data/chothuephongtro.json";
 import nhachothue from "../../data/nhachothue.json";
 
 import {dataArea, dataPrice}from '../ultis/data'
-import {getNumberFromString}from '../ultis/common'
+import {useSearchParams}from '../ultis/common'
 
 import generateCode from "../ultis/generateCode";
 import { stringToDate } from "../ultis/generateCode";
 
-const data = chothuecanho;
+const data = nhachothue;
 const dataBody = data.body;
 require("dotenv").config();
 
@@ -23,8 +23,8 @@ export const insertService = () =>
     new Promise(async (resolve, reject) => {
         try {
             await db.Category.create({
-                code: "CTCH",
-                value: "Cho thuê căn hộ",
+                code: "NCT",
+                value: "Nhà cho thuê",
                 header: data?.header?.title,
                 subheader: data?.header?.description,
             });
@@ -35,8 +35,8 @@ export const insertService = () =>
                 let userId = v4();
                 let overviewId = v4();
                 let imagesID = v4();
-                let currentArea = getNumberFromString(item?.header?.attributes?.acreage)
-                let currentPrice = getNumberFromString(item?.header?.attributes?.price)
+                let currentArea = useSearchParams(item?.header?.attributes?.acreage)
+                let currentPrice = useSearchParams(item?.header?.attributes?.price)
 
 
                 await db.Post.create({
@@ -46,7 +46,7 @@ export const insertService = () =>
                     labelCode,
                     address: item?.header?.adderss,
                     attributesId,
-                    categoryCode: "CTCH",
+                    categoryCode: "NCT",
                     description: JSON.stringify(item?.mainContent?.content),
                     userId,
                     overviewId,
