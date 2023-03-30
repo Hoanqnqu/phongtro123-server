@@ -33,6 +33,12 @@ module.exports = {
       areaCode: {
         type: Sequelize.STRING
       },
+      priceNumber: {
+        type: Sequelize.INTEGER
+      },
+      areaNumber: {
+        type: Sequelize.INTEGER
+      },
       provinceCode: {
         type: Sequelize.STRING
       },

@@ -75,6 +75,8 @@ export const insertService = () =>
                 //         priceCode:dataPrice.find(price => price.max > currentPrice && price.min<= currentPrice)?.code,
                 //         areaCode: dataArea.find(area => area.max > currentArea && area.min<= currentArea)?.code,
                 //         provinceCode,
+                //         priceNumber:currentPrice,
+                //         areaNumber:currentArea
                 //     });
                 //     await db.Attribute.create({
                 //         id: attributesId,
