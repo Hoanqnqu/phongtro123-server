@@ -1,5 +1,5 @@
 import db from '../models'
-
+import { Op } from 'sequelize'
 export const getPostService = ()=> new Promise(async(resolve, reject)=>{
     try {
         const response = await db.Post.findAll({
@@ -21,11 +21,14 @@ export const getPostService = ()=> new Promise(async(resolve, reject)=>{
         reject(error)
     }
 })
-export const getPostLimitService = (offset, query)=> new Promise(async(resolve, reject)=>{
+export const getPostLimitService = (offset, query,{priceNumber,areaNumber})=> new Promise(async(resolve, reject)=>{
     try {
         let offset_ = (!offset|| +offset<=1)?0:(+offset-1)
+        const queries = { ...query }
+        if (priceNumber) queries.priceNumber = { [Op.between]: priceNumber }
+        if (areaNumber) queries.areaNumber = { [Op.between]: areaNumber }
         const response = await db.Post.findAndCountAll({
-            where:query,
+            where: queries,
             raw: true,
             nest:true,
             offset:offset_ * +process.env.LIMIT,
