@@ -7,7 +7,7 @@ import chothuephongtro from "../../data/chothuephongtro.json";
 import nhachothue from "../../data/nhachothue.json";
 
 import {dataArea, dataPrice}from '../ultis/data'
-import {useSearchParams}from '../ultis/common'
+import {useSearchParams,useSearchParamsV2}from '../ultis/common'
 
 import generateCode from "../ultis/generateCode";
 import { stringToDate } from "../ultis/generateCode";
@@ -75,8 +75,8 @@ export const insertService = () =>
                 //         priceCode:dataPrice.find(price => price.max > currentPrice && price.min<= currentPrice)?.code,
                 //         areaCode: dataArea.find(area => area.max > currentArea && area.min<= currentArea)?.code,
                 //         provinceCode,
-                //         priceNumber:currentPrice,
-                //         areaNumber:currentArea
+                //         priceNumber: useSearchParamsV2(item?.header?.attributes?.price),
+                //         areaNumber: useSearchParamsV2(item?.header?.attributes?.acreage)
                 //     });
                 //     await db.Attribute.create({
                 //         id: attributesId,
