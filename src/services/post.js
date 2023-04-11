@@ -1,5 +1,9 @@
 import db from '../models'
 import { Op } from 'sequelize'
+import {v4 as generateId} from 'uuid'
+import generateCode from "../ultis/generateCode";
+import moment  from 'moment/moment';
+
 export const getPostService = ()=> new Promise(async(resolve, reject)=>{
     try {
         const response = await db.Post.findAll({
@@ -68,6 +72,84 @@ export const getNewPostService = ()=> new Promise(async(resolve, reject)=>{
             err: response? 0:1,
             msg: response? 'Ok': 'Failed to get postService',
             response
+        })
+    } catch (error) {
+        reject(error)
+    }
+})
+export const createNewPostService = (body, userId)=> new Promise(async(resolve, reject)=>{
+    try {   
+        
+        const attributesId = generateId()
+        const imagesId =generateId()
+        const overviewId = generateId()
+        const labelCode = generateCode(body.label)
+        const hashtag = `#${Math.floor(Math.random()* Math.pow(10,6))}`
+        const currentData = new Date()
+        const response = await db.Post.create({
+            id:generateId(),
+            title,     
+            labelCode,
+            address: body.address||null,
+            attributesId,
+            categoryCode: body.categoryCode,
+            description: body.description||null,
+            userId,
+            overviewId,
+            imagesID:imagesId,
+            priceCode:body.priceCode||null,
+            areaCode: body.areaCode||null,
+            provinceCode:body.provinceCode||null,
+            priceNumber: body.priceNumber,
+            areaNumber:body.areaNumber
+        })
+        await db.Attribute.create({
+            id: attributesId,
+            price: +priceNumber < 1? `${+priceNumber * 1000000} đồng/ tháng`:`${priceNumber} triệu/ tháng`,
+            acreage: `${areaNumber} m2`,
+            published: moment(new Date).format('DD/MM/YYYY'),
+            hashtag
+        });
+    
+        await db.Overview.create({
+            id: overviewId,
+            code: hashtag,
+            area: body.label,
+            type: body?.category,
+            target: body?.target,
+            bonus: 'Tin thường',
+            created: currentData,
+            expired: currentData.setDate(currentData.getDate()+10),
+                    });
+        await db.Image.create({
+            id: imagesId,
+            image: JSON.stringify(body.images),
+        });
+        await db.Province.findOrCreate({
+            where:{
+                [Op.or]:[
+                    {value:body?.province?.replace('Thành phố', '')},
+                    {value:body?.province?.replace('Tỉnh', '')}
+                ]
+            },
+            defaults:{
+                code:body?.province?.include('Thành phố')? generateCode(body.province?.replace('Thành phố', '')): generateCode(body?.province?.replace('Tỉnh', '')),
+                value:body?.province?.include('Thành phố')?body.province?.replace('Thành phố', ''): body?.province?.replace('Tỉnh', '')
+            }
+        })
+        await db.Label.findOrCreate({
+            where:{
+                code: labelCode
+            },
+            defaults:{
+                code:labelCode,
+                value:body?.label
+            }
+        })
+        resolve({
+            err:0,
+            msg:'Ok',
+           
         })
     } catch (error) {
         reject(error)
