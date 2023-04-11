@@ -37,6 +37,7 @@ export const getPostLimitService = (offset, query,{priceNumber,areaNumber})=> ne
             nest:true,
             offset:offset_ * +process.env.LIMIT,
             limit:+process.env.LIMIT,
+            order:[['createdAt','DESC']],
             include:[
                 {model:db.Image, as:'images', attributes:['id','image']},
                 {model:db.Attribute, as:'attributes', attributes:['price', 'acreage', 'published', 'hashtag']},
@@ -86,27 +87,27 @@ export const createNewPostService = (body, userId)=> new Promise(async(resolve, 
         const labelCode = generateCode(body.label)
         const hashtag = `#${Math.floor(Math.random()* Math.pow(10,6))}`
         const currentData = new Date()
-        const response = await db.Post.create({
+       await db.Post.create({
             id:generateId(),
-            title,     
+            title:body.title,     
             labelCode,
             address: body.address||null,
             attributesId,
             categoryCode: body.categoryCode,
-            description: body.description||null,
+            description: JSON.stringify(body.description)||null,
             userId,
             overviewId,
             imagesID:imagesId,
             priceCode:body.priceCode||null,
             areaCode: body.areaCode||null,
-            provinceCode:body.provinceCode||null,
+            provinceCode:body?.province?.includes('Thành phố')? generateCode(body.province?.replace('Thành phố', '')): generateCode(body?.province?.replace('Tỉnh', ''))||null,
             priceNumber: body.priceNumber,
             areaNumber:body.areaNumber
         })
         await db.Attribute.create({
             id: attributesId,
-            price: +priceNumber < 1? `${+priceNumber * 1000000} đồng/ tháng`:`${priceNumber} triệu/ tháng`,
-            acreage: `${areaNumber} m2`,
+            price: +body.priceNumber < 1? `${+body.priceNumber * 1000000} đồng/ tháng`:`${body.priceNumber} triệu/ tháng`,
+            acreage: `${body.areaNumber} m2`,
             published: moment(new Date).format('DD/MM/YYYY'),
             hashtag
         });
@@ -133,8 +134,8 @@ export const createNewPostService = (body, userId)=> new Promise(async(resolve, 
                 ]
             },
             defaults:{
-                code:body?.province?.include('Thành phố')? generateCode(body.province?.replace('Thành phố', '')): generateCode(body?.province?.replace('Tỉnh', '')),
-                value:body?.province?.include('Thành phố')?body.province?.replace('Thành phố', ''): body?.province?.replace('Tỉnh', '')
+                code:body?.province?.includes('Thành phố')? generateCode(body.province?.replace('Thành phố', '')): generateCode(body?.province?.replace('Tỉnh', '')),
+                value:body?.province?.includes('Thành phố')?body.province?.replace('Thành phố', ''): body?.province?.replace('Tỉnh', '')
             }
         })
         await db.Label.findOrCreate({

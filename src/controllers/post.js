@@ -44,7 +44,7 @@ export const createNewPost = async(req, res) =>{
     try {
         const {categoryCode, title, priceNumber, areaNumber,label } = req.body
         const {id} = req.user
-        if(categoryCode || id || title || priceNumber || areaNumber ||label) return res.status(400).json({
+        if(!categoryCode ||!id || !title || !priceNumber || !areaNumber ||!label) return res.status(400).json({
             err:1,
             msg:'Missing inputs'
         })
