@@ -87,6 +87,8 @@ export const createNewPostService = (body, userId)=> new Promise(async(resolve, 
         const labelCode = generateCode(body.label)
         const hashtag = `#${Math.floor(Math.random()* Math.pow(10,6))}`
         const currentData = new Date()
+        const expiredData = new Date() 
+        expiredData.setDate(expiredData.getDate()+10)
        await db.Post.create({
             id:generateId(),
             title:body.title,     
@@ -120,7 +122,7 @@ export const createNewPostService = (body, userId)=> new Promise(async(resolve, 
             target: body?.target,
             bonus: 'Tin thường',
             created: currentData,
-            expired: currentData.setDate(currentData.getDate()+10),
+            expired:expiredData,
                     });
         await db.Image.create({
             id: imagesId,
@@ -151,6 +153,36 @@ export const createNewPostService = (body, userId)=> new Promise(async(resolve, 
             err:0,
             msg:'Ok',
            
+        })
+    } catch (error) {
+        reject(error)
+    }
+})
+
+export const getPostLimitAdminService = (offset, id, query)=> new Promise(async(resolve, reject)=>{
+    try {
+        let offset_ = (!offset|| +offset<=1)?0:(+offset-1)
+        const queries = { ...query, userId:id }
+      
+        const response = await db.Post.findAndCountAll({
+            where: queries,
+            raw: true,
+            nest:true,
+            offset:offset_ * +process.env.LIMIT,
+            limit:+process.env.LIMIT,
+            order:[['createdAt','DESC']],
+            include:[
+                {model:db.Image, as:'images', attributes:['id','image']},
+                {model:db.Attribute, as:'attributes', attributes:['price', 'acreage', 'published', 'hashtag']},
+                {model:db.User, as:'user', attributes:['name', 'zalo', 'phone']},
+                {model:db.Overview,  as:'overview'}
+            ],
+            attributes:['id', 'title','star', 'address','description']
+        })
+        resolve({
+            err: response? 0:1,
+            msg: response? 'Ok': 'Failed to get postService',
+            response
         })
     } catch (error) {
         reject(error)

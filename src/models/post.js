@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
       Post.belongsTo(models.Image, {foreignKey: 'imagesID', targetKey:'id', as:'images' })
       Post.belongsTo(models.User, {foreignKey: 'userId', targetKey:'id', as:'user' })
       Post.belongsTo(models.Attribute, {foreignKey: 'attributesId', targetKey:'id', as:'attributes' })
-
+      Post.belongsTo(models.Overview, {foreignKey: 'overviewId', targetKey:'id', as:'overview' })
 
     }
   }
