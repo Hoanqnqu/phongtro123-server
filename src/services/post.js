@@ -177,12 +177,85 @@ export const getPostLimitAdminService = (offset, id, query)=> new Promise(async(
                 {model:db.User, as:'user', attributes:['name', 'zalo', 'phone']},
                 {model:db.Overview,  as:'overview'}
             ],
-            attributes:['id', 'title','star', 'address','description']
+           
         })
         resolve({
             err: response? 0:1,
             msg: response? 'Ok': 'Failed to get postService',
             response
+        })
+    } catch (error) {
+        reject(error)
+    }
+})
+export const updatePost = (body)=> new Promise(async(resolve, reject)=>{
+    try {   
+        console.log(body);
+        const {postId,overviewId, imagesID, attributesId}  = body
+        const labelCode = generateCode(body.label)
+    
+       await db.Post.update({
+            title:body.title,     
+            labelCode,
+            address: body.address||null,
+            categoryCode: body.categoryCode,
+            description: JSON.stringify(body.description)||null,
+            priceCode:body.priceCode||null,
+            areaCode: body.areaCode||null,
+            provinceCode:body?.province?.includes('Thành phố')? generateCode(body.province?.replace('Thành phố', '')): generateCode(body?.province?.replace('Tỉnh', ''))||null,
+            priceNumber: body.priceNumber,
+            areaNumber:body.areaNumber
+        }, {
+            where:{id:postId}
+        })
+        await db.Attribute.update({
+
+            price: +body.priceNumber < 1? `${+body.priceNumber * 1000000} đồng/ tháng`:`${body.priceNumber} triệu/ tháng`,
+            acreage: `${body.areaNumber} m2`,
+
+        },{where:{
+            id:attributesId
+        }});
+    
+        await db.Overview.update({
+        
+            area: body.label,
+            type: body?.category,
+            target: body?.target,
+            },{
+                where:{id:overviewId}
+            });
+        await db.Image.update({
+        
+            image: JSON.stringify(body.images),
+        },{
+            where:{id:imagesID}
+        });
+        await db.Province.findOrCreate({
+            where:{
+                [Op.or]:[
+                    {value:body?.province?.replace('Thành phố', '')},
+                    {value:body?.province?.replace('Tỉnh', '')}
+                ]
+            },
+            defaults:{
+                code:body?.province?.includes('Thành phố')? generateCode(body.province?.replace('Thành phố', '')): generateCode(body?.province?.replace('Tỉnh', '')),
+                value:body?.province?.includes('Thành phố')?body.province?.replace('Thành phố', ''): body?.province?.replace('Tỉnh', '')
+            }
+        })
+        await db.Label.findOrCreate({
+            where:{
+                code: labelCode
+            },
+            defaults:{
+                code:labelCode,
+                value:body?.label
+            }
+        })
+        resolve({
+            err:0,
+            msg:'Ok',
+           
         })
     } catch (error) {
         reject(error)

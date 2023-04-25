@@ -75,5 +75,24 @@ export const getLimitPostsAdmin = async(req, res) =>{
             err:-1,
             msg:"Failed at post controller"+error
         })
+    }}
+export const updatePost = async(req, res) =>{
+  const {postId,overviewId, imagesID, attributesId, ...payload}  = req.body
+  const {id} = req.user
+    console.log(postId,overviewId, imagesID, attributesId, id);
+    try {
+        if( !postId|| !id|| !overviewId|| !imagesID|| !attributesId) 
+        return res.status(400).json({
+            err:1,
+            msg:'Missing input'
+        })
+        const response = await services.updatePost(req.body)
+        return res.status(200).json(response)
+        
+    } catch (error) {
+        return res.status(500).json({
+            err:-1,
+            msg:"Failed at post controller"+error
+        })
     }
 }
