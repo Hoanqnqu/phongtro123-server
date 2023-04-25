@@ -25,19 +25,23 @@ export const getPostService = ()=> new Promise(async(resolve, reject)=>{
         reject(error)
     }
 })
-export const getPostLimitService = (offset, query,{priceNumber,areaNumber})=> new Promise(async(resolve, reject)=>{
+export const getPostLimitService = (offset,{limitPost,order, ...query},{priceNumber,areaNumber})=> new Promise(async(resolve, reject)=>{
     try {
         let offset_ = (!offset|| +offset<=1)?0:(+offset-1)
         const queries = { ...query }
-        if (priceNumber) queries.priceNumber = { [Op.between]: priceNumber }
-        if (areaNumber) queries.areaNumber = { [Op.between]: areaNumber }
+        const limit = +limitPost||+process.env.LIMIT
+        queries.limit = limit
+        if (priceNumber) query.priceNumber = { [Op.between]: priceNumber }
+        if (areaNumber) query.areaNumber = { [Op.between]: areaNumber }
+        if(order) queries.order = [order]
         const response = await db.Post.findAndCountAll({
-            where: queries,
+            where: query,
             raw: true,
             nest:true,
-            offset:offset_ * +process.env.LIMIT,
+            offset:offset_ * limit ,
             limit:+process.env.LIMIT,
-            order:[['createdAt','DESC']],
+            ...queries,
+           
             include:[
                 {model:db.Image, as:'images', attributes:['id','image']},
                 {model:db.Attribute, as:'attributes', attributes:['price', 'acreage', 'published', 'hashtag']},
