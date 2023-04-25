@@ -79,7 +79,7 @@ export const getLimitPostsAdmin = async(req, res) =>{
 export const updatePost = async(req, res) =>{
   const {postId,overviewId, imagesID, attributesId, ...payload}  = req.body
   const {id} = req.user
-    console.log(postId,overviewId, imagesID, attributesId, id);
+   
     try {
         if( !postId|| !id|| !overviewId|| !imagesID|| !attributesId) 
         return res.status(400).json({
@@ -96,3 +96,25 @@ export const updatePost = async(req, res) =>{
         })
     }
 }
+export const deletePost = async(req, res) =>{
+    console.log(req)
+    const {postId}  = req.query
+    console.log(11, postId);
+    const {id} = req.user
+     
+      try {
+          if(!postId|| !id) 
+          return res.status(400).json({
+              err:1,
+              msg:'Missing input'
+          })
+          const response = await services.deletePost(postId)
+          return res.status(200).json(response)
+          
+      } catch (error) {
+          return res.status(500).json({
+              err:-1,
+              msg:"Failed at post controller"+error
+          })
+      }
+  }
